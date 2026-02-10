@@ -65,6 +65,20 @@
       gap: 14px;
       grid-template-columns: 1fr;
     }
+    @media (min-width: 980px){
+      #billGrid{
+        overflow-x: auto;
+        padding-bottom: 10px;
+        -webkit-overflow-scrolling: touch;
+      }
+      #billGrid{
+        display: grid;
+        grid-auto-flow: column;
+        grid-auto-columns: minmax(340px, 1fr);
+        grid-template-columns: unset;
+        gap: 10px;
+      }
+    }
 
     .card{
       background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.03));
@@ -165,6 +179,9 @@
       border-color: rgba(192,132,252,.50);
       box-shadow: 0 0 0 4px rgba(192,132,252,.12);
     }
+    .inline{
+      display:flex; gap:8px; align-items:center; flex-wrap:wrap;
+    }
     .divider{
       height: 1px;
       background: rgba(255,255,255,.10);
@@ -195,7 +212,135 @@
     .kpi .lab{ font-size: 12px; color: var(--muted); }
     .kpi .val{ margin-top: 6px; font-size: 16px; }
 
-    /* Bills grid (mobile-first) */
+    /* Calendar */
+    .calShell{
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 18px;
+      background: rgba(0,0,0,.14);
+      padding: 12px;
+      overflow:hidden;
+    }
+    .calTop{
+      display:flex;
+      justify-content: space-between;
+      align-items:center;
+      gap:10px;
+      margin-bottom:10px;
+    }
+    .calTitle{
+      display:flex;
+      flex-direction: column;
+      gap:2px;
+      align-items:center;
+      flex:1;
+      min-width: 140px;
+    }
+    .calTitle .year{ font-size: 14px; color: rgba(255,255,255,.85); letter-spacing:.2px; }
+    .calTitle .sub{ font-size: 12px; color: var(--muted2); }
+
+    .iconBtn{
+      width: 38px; height: 38px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.06);
+      color: rgba(255,255,255,.9);
+      display:flex; align-items:center; justify-content:center;
+      cursor:pointer;
+      user-select:none;
+    }
+    .iconBtn:active{ transform: translateY(1px); }
+
+    .monthChips{
+      display:flex;
+      gap:8px;
+      overflow-x:auto;
+      padding-bottom:6px;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+    .monthChips::-webkit-scrollbar{ display:none; }
+    .chip{
+      flex: 0 0 auto;
+      padding: 8px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.06);
+      color: rgba(255,255,255,.85);
+      font-size: 12px;
+      cursor:pointer;
+      user-select:none;
+    }
+    .chip.active{
+      border-color: rgba(255,211,106,.60);
+      box-shadow: 0 0 0 3px rgba(255,211,106,.12);
+    }
+
+    .dow{
+      display:grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap:8px;
+      margin-top:8px;
+      color: var(--muted2);
+      font-size: 11px;
+      text-align:center;
+    }
+    .calGrid{
+      display:grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap:8px;
+      margin-top:8px;
+    }
+    .dayCell{
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.04);
+      padding: 10px 8px;
+      min-height: 44px;
+      display:flex;
+      align-items:center;
+      justify-content: center;
+      flex-direction: column;
+      gap:6px;
+      cursor:pointer;
+      user-select:none;
+      position:relative;
+    }
+    .dayCell.muted{
+      opacity:.45;
+      cursor: default;
+    }
+    .dayCell.today{
+      border-color: rgba(192,132,252,.55);
+      box-shadow: 0 0 0 3px rgba(192,132,252,.10);
+    }
+    .dayCell.selected{
+      border-color: rgba(255,211,106,.70);
+      box-shadow: 0 0 0 3px rgba(255,211,106,.10);
+    }
+    .dayCell.inWindow::after{
+      content:"";
+      position:absolute;
+      inset:-1px;
+      border-radius: 14px;
+      background: linear-gradient(90deg, rgba(56,217,150,.14), rgba(255,211,106,.10));
+      z-index:0;
+    }
+    .dayCell > *{ position:relative; z-index:1; }
+
+    .dayNum{ font-size: 13px; color: rgba(255,255,255,.92); }
+    .dots{
+      display:flex; gap:4px; align-items:center; justify-content:center;
+      min-height: 8px;
+    }
+    .dotMini{
+      width: 6px; height: 6px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.35);
+    }
+    .dotMini.hasBills{ background: var(--warn); }
+    .dotMini.big{ width: 8px; height: 8px; }
+
+    /* Bills grid */
     .gridBills{
       display:grid;
       grid-template-columns: 1fr;
@@ -295,7 +440,25 @@
     }
     .miniRow b{ color: rgba(255,255,255,.88); font-weight:650; }
 
-    /* ---------- AUTH OVERLAY ---------- */
+    .segRow{
+      display:flex; gap:8px; flex-wrap:wrap; align-items:center;
+    }
+    .segBtn{
+      padding: 8px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.06);
+      color: rgba(255,255,255,.85);
+      font-size: 12px;
+      cursor:pointer;
+      user-select:none;
+    }
+    .segBtn.active{
+      border-color: rgba(192,132,252,.55);
+      box-shadow: 0 0 0 3px rgba(192,132,252,.10);
+    }
+
+    /* AUTH OVERLAY */
     .overlay{
       position: fixed;
       inset: 0;
@@ -372,6 +535,12 @@
       font-size: 12px;
       line-height: 1.35;
     }
+
+    /* Mobile comfort */
+    @media(max-width: 420px){
+      .dayCell{ min-height: 42px; padding: 9px 7px; }
+      .iconBtn{ width: 36px; height: 36px; }
+    }
   </style>
 </head>
 
@@ -380,7 +549,8 @@
     <div>
       <h1>Budget Dashboard</h1>
       <div class="subtitle">
-        Cash + bills + (optional) debts. Per-user cloud save via your new API.
+        Type the cash you actually have right now, pick how many days until you get paid again, and this will show:
+        bills due in that window + what’s left for spending. Calendar stays. Server save stays.
       </div>
     </div>
     <div class="pillRow">
@@ -393,14 +563,13 @@
   </div>
 
   <div class="wrap">
-    <!-- Snapshot -->
+    <!-- LEFT: Snapshot + Calendar -->
     <section class="card">
       <div class="cardHeader">
         <h2>Snapshot</h2>
         <div class="pillRow">
           <button class="btn ghost" id="reloadBtn">Reload</button>
           <button class="btn primary" id="saveBtn">Save</button>
-          <button class="btn" id="autosaveToggleBtn" title="Toggle autosave">Autosave: ON</button>
         </div>
       </div>
 
@@ -423,6 +592,10 @@
           <label id="customDaysWrap" style="display:none;">Custom days
             <input id="payWindowDays" type="number" min="1" max="90" step="1" inputmode="numeric" placeholder="e.g. 10" />
           </label>
+
+          <div style="flex:0 0 auto; display:flex; gap:8px;">
+            <button class="btn" id="autosaveToggleBtn" title="Toggle autosave">Autosave: ON</button>
+          </div>
         </div>
 
         <div class="kpiGrid">
@@ -446,8 +619,45 @@
 
         <div class="divider"></div>
 
-        <div class="pill"><span class="muted2" id="dueCount">0 bills</span></div>
-        <div class="miniList" id="dueList" style="margin-top:10px;"></div>
+        <div class="segRow" style="margin-bottom: 10px;">
+          <button class="segBtn active" id="viewCalBtn">Calendar</button>
+          <button class="segBtn" id="viewDueBtn">Due list</button>
+        </div>
+
+        <div id="calendarView">
+          <div class="calShell">
+            <div class="calTop">
+              <div class="iconBtn" id="calPrevBtn" aria-label="Previous month">‹</div>
+              <div class="calTitle">
+                <div class="year" id="calYear">—</div>
+                <div class="sub" id="calMonthLabel">—</div>
+              </div>
+              <div class="iconBtn" id="calNextBtn" aria-label="Next month">›</div>
+            </div>
+
+            <div class="monthChips" id="monthChips"></div>
+
+            <div class="dow">
+              <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
+            </div>
+
+            <div class="calGrid" id="calGrid"></div>
+
+            <div class="divider"></div>
+
+            <div class="small" style="margin-bottom: 8px;">
+              Tap a day to see bills due. Highlight = your pay window (today → payday).
+            </div>
+            <div class="miniList" id="dayBillsList"></div>
+          </div>
+        </div>
+
+        <div id="dueView" style="display:none;">
+          <div class="pill" style="margin-bottom:10px;">
+            <span class="muted2" id="dueCount">0 bills</span>
+          </div>
+          <div class="miniList" id="dueList"></div>
+        </div>
       </div>
 
       <div class="stickyFooter">
@@ -458,7 +668,7 @@
       </div>
     </section>
 
-    <!-- Bills + Debts -->
+    <!-- RIGHT: Bills + Debts editor -->
     <section class="card">
       <div class="cardHeader">
         <h2>Manage bills</h2>
@@ -468,6 +678,8 @@
       </div>
 
       <div class="content">
+        <div class="divider" style="margin-top:0;"></div>
+
         <div class="formRow" style="margin-bottom:10px;">
           <label>Bill name
             <input id="billName" type="text" placeholder="Rent" />
@@ -544,7 +756,7 @@
         </div>
 
         <div class="authInfo">
-          Your session is stored in a secure cookie. Don’t lose your password — there’s no email reset yet.
+          Session is stored in an HttpOnly cookie (frontend can’t read it). Don’t lose your password — no reset yet.
         </div>
 
         <div class="pillRow" style="margin-top:12px; justify-content:flex-end;">
@@ -558,11 +770,11 @@
 
 <script>
   // ======================
-  // Config (FIXED ENDPOINTS)
+  // Config (SERVER STUFF - DO NOT CHANGE)
   // ======================
   const API_BASE = "https://backend.jumpnexus.org:8445";
 
-  // Backend routes you showed:
+  // Backend routes:
   // POST /budget/signup
   // POST /budget/login
   // POST /budget/logout
@@ -607,8 +819,7 @@
   async function fetchJson(url, opts={}){
     const res = await fetch(url, {
       ...opts,
-      // ✅ REQUIRED for cookie-based auth from GitHub Pages -> your backend
-      credentials: "include",
+      credentials: "include", // IMPORTANT: cookie session
       headers: {
         "Content-Type": "application/json",
         ...(opts.headers||{})
@@ -639,6 +850,13 @@
     x.setDate(x.getDate() + Number(days||0));
     x.setHours(0,0,0,0);
     return x;
+  }
+
+  function monthStart(d){ return new Date(d.getFullYear(), d.getMonth(), 1); }
+  function monthEnd(d){ return new Date(d.getFullYear(), d.getMonth()+1, 0); }
+
+  function sameDay(a,b){
+    return a.getFullYear()===b.getFullYear() && a.getMonth()===b.getMonth() && a.getDate()===b.getDate();
   }
 
   // ======================
@@ -712,6 +930,20 @@
     return out;
   }
 
+  function billsOnDay(bills, date){
+    const d = new Date(date); d.setHours(0,0,0,0);
+    const y = d.getFullYear(), m = d.getMonth();
+    const out = [];
+    for(const b of bills){
+      const due = clampMonthlyDate(y, m, b.day);
+      if(sameDay(due, d)){
+        out.push({ due, name: b.name, amount: b.amount, id: b.id, day: b.day });
+      }
+    }
+    out.sort((a,b)=>a.amount-b.amount);
+    return out;
+  }
+
   // ======================
   // State
   // ======================
@@ -720,6 +952,11 @@
   let dirty = false;
   let lastSavedAt = "";
 
+  // Calendar state
+  let calDate = today0();
+  let selectedDay = today0();
+
+  // Auth state
   let authMode = "login"; // "login" | "signup"
   let isAuthed = false;
 
@@ -766,7 +1003,6 @@
     const password = ($("authPass").value || "").trim();
 
     if(username.length < 3) return setAuthError("Username must be at least 3 characters.");
-    // ✅ server requires 8+
     if(password.length < 8) return setAuthError("Password must be at least 8 characters.");
 
     setAuthError("");
@@ -774,15 +1010,9 @@
 
     try{
       if(authMode === "signup"){
-        await fetchJson(EP.signup, {
-          method: "POST",
-          body: JSON.stringify({ username, password })
-        });
+        await fetchJson(EP.signup, { method: "POST", body: JSON.stringify({ username, password }) });
       } else {
-        await fetchJson(EP.login, {
-          method: "POST",
-          body: JSON.stringify({ username, password })
-        });
+        await fetchJson(EP.login, { method: "POST", body: JSON.stringify({ username, password }) });
       }
 
       toast(authMode === "login" ? "Logged in" : "Account created");
@@ -791,7 +1021,7 @@
       $("logoutBtn").style.display = "";
 
       hideAuthOverlay();
-      await loadFromApi(); // now load user data from /budget/me
+      await loadFromApi();
     }catch(e){
       console.error(e);
       const nice = (e?.body && e.body.error) ? e.body.error : (e.message || "auth_failed");
@@ -801,11 +1031,9 @@
   }
 
   async function doLogout(){
-    try{
-      await fetchJson(EP.logout, { method:"POST" });
-    }catch(e){
-      console.warn("logout failed", e);
-    }
+    try{ await fetchJson(EP.logout, { method:"POST" }); }
+    catch(e){ console.warn("logout failed", e); }
+
     isAuthed = false;
     $("logoutBtn").style.display = "none";
     $("loginBtn").style.display = "";
@@ -816,6 +1044,8 @@
     data = normalize({ cashNow: 0, payWindowDays: 14, bills: [], debts: [], updatedAt: "" });
     lastSavedAt = "";
     applyUiFromData();
+    selectedDay = today0();
+    calDate = today0();
     renderAll();
 
     showAuthOverlay("login", "Please login to load your cloud data.");
@@ -837,7 +1067,7 @@
   }
 
   // ======================
-  // Load / Save (API)  ✅ FIXED to /budget/me
+  // Load / Save (API)
   // ======================
   async function loadFromApi(){
     setStatus("warn", "Loading…");
@@ -849,7 +1079,14 @@
       lastSavedAt = data.updatedAt || "";
       setStatus("ok", "Loaded");
       toast("Loaded");
+
       applyUiFromData();
+
+      // keep calendar sane
+      const t = today0();
+      if(!selectedDay) selectedDay = t;
+      if(!calDate) calDate = t;
+
       renderAll();
     }catch(e){
       console.error(e);
@@ -925,12 +1162,14 @@
   function renderAll(){
     const t = today0();
     $("todayPill").textContent = "Today: " + t.toLocaleDateString();
+
     $("autosaveToggleBtn").textContent = "Autosave: " + (autosave ? "ON" : "OFF");
     $("lastSavedText").textContent = "Last saved: " + (lastSavedAt ? new Date(lastSavedAt).toLocaleString() : "—");
 
     renderSnapshot();
     renderBills();
     renderDebts();
+    renderCalendar();
   }
 
   function renderSnapshot(){
@@ -957,14 +1196,18 @@
       list.innerHTML = `<div class="miniRow"><span>No bills due before payday</span><b class="good">Nice.</b></div>`;
     } else {
       for(const b of dueBills){
-        const row = document.createElement("div");
-        row.className = "miniRow";
-        const d = b.due;
-        const label = `${d.toLocaleDateString(undefined,{month:'short',day:'2-digit'})} • Day ${b.day}`;
-        row.innerHTML = `<span>${escapeHtml(b.name)} <span class="muted2">(${escapeHtml(label)})</span></span><b class="warn">${fmt(b.amount)}</b>`;
-        list.appendChild(row);
+        list.appendChild(dueRowEl(b));
       }
     }
+  }
+
+  function dueRowEl(b){
+    const el = document.createElement("div");
+    el.className = "miniRow";
+    const d = b.due;
+    const label = `${d.toLocaleDateString(undefined,{month:'short',day:'2-digit'})} • Day ${b.day}`;
+    el.innerHTML = `<span>${escapeHtml(b.name)} <span class="muted2">(${escapeHtml(label)})</span></span><b class="warn">${fmt(b.amount)}</b>`;
+    return el;
   }
 
   function renderBills(){
@@ -1038,6 +1281,126 @@
         </div>
       `;
 
+      list.appendChild(row);
+    }
+  }
+
+  // ======================
+  // Calendar rendering
+  // ======================
+  function renderCalendar(){
+    if(!calDate) calDate = today0();
+    if(!selectedDay) selectedDay = today0();
+
+    $("calYear").textContent = String(calDate.getFullYear());
+    $("calMonthLabel").textContent = calDate.toLocaleDateString(undefined, { month: "long" });
+
+    const chips = $("monthChips");
+    chips.innerHTML = "";
+    const y = calDate.getFullYear();
+    for(let m=0;m<12;m++){
+      const d = new Date(y,m,1);
+      const btn = document.createElement("div");
+      btn.className = "chip" + (m===calDate.getMonth() ? " active" : "");
+      btn.textContent = d.toLocaleDateString(undefined,{month:"short"});
+      btn.addEventListener("click", ()=>{
+        calDate = new Date(y, m, 1);
+        const sd = new Date(selectedDay);
+        selectedDay = new Date(y, m, Math.min(sd.getDate(), new Date(y,m+1,0).getDate()));
+        renderCalendar();
+      });
+      chips.appendChild(btn);
+    }
+
+    const grid = $("calGrid");
+    grid.innerHTML = "";
+
+    const first = monthStart(calDate);
+    const last = monthEnd(calDate);
+
+    const startDow = first.getDay();
+    const totalDays = last.getDate();
+
+    const prevLast = new Date(first.getFullYear(), first.getMonth(), 0).getDate();
+    for(let i=0;i<startDow;i++){
+      const dayNum = prevLast - (startDow-1-i);
+      const cell = dayCell(new Date(first.getFullYear(), first.getMonth()-1, dayNum), true);
+      grid.appendChild(cell);
+    }
+
+    for(let d=1; d<=totalDays; d++){
+      const cell = dayCell(new Date(first.getFullYear(), first.getMonth(), d), false);
+      grid.appendChild(cell);
+    }
+
+    const cellsNow = grid.children.length;
+    const remainder = cellsNow % 7;
+    const trailing = remainder === 0 ? 0 : (7 - remainder);
+    for(let i=1;i<=trailing;i++){
+      const cell = dayCell(new Date(first.getFullYear(), first.getMonth()+1, i), true);
+      grid.appendChild(cell);
+    }
+
+    renderSelectedDayBills();
+  }
+
+  function dayCell(dateObj, isMuted){
+    const cell = document.createElement("div");
+    cell.className = "dayCell" + (isMuted ? " muted" : "");
+
+    const t = today0();
+    const pay = paydayDate();
+
+    const d0 = new Date(dateObj); d0.setHours(0,0,0,0);
+    const inWindow = (d0 >= t && d0 <= pay);
+    if(inWindow) cell.classList.add("inWindow");
+
+    if(sameDay(dateObj, t)) cell.classList.add("today");
+    if(sameDay(dateObj, selectedDay)) cell.classList.add("selected");
+
+    const bills = billsOnDay(data.bills, dateObj);
+    const dots = bills.length ? Math.min(3, bills.length) : 0;
+
+    cell.innerHTML = `
+      <div class="dayNum">${dateObj.getDate()}</div>
+      <div class="dots">
+        ${dots
+          ? `<span class="dotMini hasBills big"></span>${dots>=2?`<span class="dotMini hasBills"></span>`:""}${dots>=3?`<span class="dotMini hasBills"></span>`:""}`
+          : `<span class="dotMini"></span>`
+        }
+      </div>
+    `;
+
+    if(!isMuted){
+      cell.addEventListener("click", ()=>{
+        selectedDay = new Date(dateObj);
+        renderCalendar();
+      });
+    }
+
+    return cell;
+  }
+
+  function renderSelectedDayBills(){
+    const list = $("dayBillsList");
+    list.innerHTML = "";
+
+    const bills = billsOnDay(data.bills, selectedDay);
+    if(bills.length === 0){
+      list.innerHTML = `<div class="miniRow"><span>${selectedDay.toLocaleDateString(undefined,{month:"short",day:"2-digit"})}</span><b class="muted2">No bills due</b></div>`;
+      return;
+    }
+
+    const head = document.createElement("div");
+    head.className = "miniRow";
+    const total = bills.reduce((s,x)=>s+Number(x.amount||0),0);
+    head.innerHTML = `<span><b>${selectedDay.toLocaleDateString(undefined,{month:"short",day:"2-digit"})}</b> • ${bills.length} due</span><b class="warn">${fmt(total)}</b>`;
+    list.appendChild(head);
+
+    for(const b of bills){
+      const row = document.createElement("div");
+      row.className = "miniRow";
+      row.innerHTML = `<span>${escapeHtml(b.name)}</span><b class="warn">${fmt(b.amount)}</b>`;
       list.appendChild(row);
     }
   }
@@ -1136,6 +1499,7 @@
     data.cashNow = Number($("cashNow").value || 0);
     queueAutosave();
     renderSnapshot();
+    renderCalendar();
   });
 
   $("autosaveToggleBtn").addEventListener("click", ()=>{
@@ -1148,12 +1512,10 @@
   $("payWindowPreset").addEventListener("change", ()=>{
     const v = $("payWindowPreset").value;
     $("customDaysWrap").style.display = (v === "custom") ? "flex" : "none";
-
     if(v === "custom"){
       $("payWindowDays").value = String(data.payWindowDays || 14);
       $("payWindowDays").focus();
     }
-
     data.payWindowDays = currentPayWindowDays();
     queueAutosave();
     renderAll();
@@ -1176,6 +1538,32 @@
     renderAll();
   });
 
+  // Calendar nav
+  $("calPrevBtn").addEventListener("click", ()=>{
+    calDate = new Date(calDate.getFullYear(), calDate.getMonth()-1, 1);
+    selectedDay = new Date(calDate.getFullYear(), calDate.getMonth(), Math.min(selectedDay.getDate(), new Date(calDate.getFullYear(), calDate.getMonth()+1, 0).getDate()));
+    renderCalendar();
+  });
+  $("calNextBtn").addEventListener("click", ()=>{
+    calDate = new Date(calDate.getFullYear(), calDate.getMonth()+1, 1);
+    selectedDay = new Date(calDate.getFullYear(), calDate.getMonth(), Math.min(selectedDay.getDate(), new Date(calDate.getFullYear(), calDate.getMonth()+1, 0).getDate()));
+    renderCalendar();
+  });
+
+  // View toggle
+  $("viewCalBtn").addEventListener("click", ()=>{
+    $("viewCalBtn").classList.add("active");
+    $("viewDueBtn").classList.remove("active");
+    $("calendarView").style.display = "";
+    $("dueView").style.display = "none";
+  });
+  $("viewDueBtn").addEventListener("click", ()=>{
+    $("viewDueBtn").classList.add("active");
+    $("viewCalBtn").classList.remove("active");
+    $("calendarView").style.display = "none";
+    $("dueView").style.display = "";
+  });
+
   // Auth buttons
   $("loginBtn").addEventListener("click", ()=> showAuthOverlay("login"));
   $("logoutBtn").addEventListener("click", doLogout);
@@ -1187,12 +1575,11 @@
   $("authGoBtn").addEventListener("click", doAuth);
   $("authPass").addEventListener("keydown", (e)=>{ if(e.key === "Enter") doAuth(); });
 
-  // Close overlay when clicking outside card
   $("authOverlay").addEventListener("click", (e)=>{
     if(e.target === $("authOverlay")) hideAuthOverlay();
   });
 
-  // Global delegates
+  // Global click delegates
   document.addEventListener("click", (e)=>{
     const t = e.target;
 
@@ -1213,6 +1600,8 @@
   (function init(){
     const t = today0();
     $("todayPill").textContent = "Today: " + t.toLocaleDateString();
+    selectedDay = t;
+    calDate = t;
 
     setStatus("warn", "Loading…");
 
@@ -1220,7 +1609,7 @@
       const ok = await checkMe();
       if(ok){
         await loadFromApi();
-      }else{
+      } else {
         setStatus("bad", "Login required");
         renderAll();
         showAuthOverlay("login", "Login or create an account to start.");
