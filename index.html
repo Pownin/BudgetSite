@@ -1,0 +1,1239 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Budget Dashboard (Cash + Bills)</title>
+  <style>
+    :root{
+      --bg0:#05040c;
+      --bg1:#0b0c18;
+      --border: rgba(255,255,255,.12);
+      --text: rgba(255,255,255,.93);
+      --muted: rgba(255,255,255,.70);
+      --muted2: rgba(255,255,255,.55);
+
+      --good:#38d996;
+      --bad:#ff5c7a;
+      --warn:#ffd36a;
+
+      --shadow: 0 18px 60px rgba(0,0,0,.55);
+      --r: 18px;
+
+      --accentA: #c084fc;
+      --accentB: #f472b6;
+    }
+
+    *{ box-sizing:border-box; }
+    html, body{ min-height:100%; }
+    body{
+      margin:0;
+      font-family: system-ui,-apple-system,Segoe UI,Roboto,Arial;
+      color: var(--text);
+      background:
+        radial-gradient(900px 500px at 15% -10%, rgba(192,132,252,.45), transparent 60%),
+        radial-gradient(900px 500px at 85% 0%, rgba(244,114,182,.20), transparent 55%),
+        linear-gradient(180deg, var(--bg1), var(--bg0));
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Layout */
+    .topbar{
+      max-width:1100px;
+      margin: 0 auto;
+      padding: 14px 14px 0 14px;
+      display:flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: flex-start;
+      flex-wrap: wrap;
+    }
+    h1{ margin:0; font-size:18px; letter-spacing:.2px; }
+    .subtitle{
+      margin-top:6px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.35;
+      max-width: 780px;
+    }
+
+    .wrap{
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 12px 14px 28px 14px;
+      display: grid;
+      gap: 14px;
+      grid-template-columns: 1fr;
+    }
+
+    .card{
+      background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.03));
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+    .cardHeader{
+      padding: 12px 12px 10px 12px;
+      display:flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: center;
+      border-bottom: 1px solid rgba(255,255,255,.08);
+      background: rgba(0,0,0,.18);
+    }
+    .cardHeader h2{
+      margin:0;
+      font-size: 13px;
+      letter-spacing:.2px;
+      color: rgba(255,255,255,.88);
+    }
+
+    .content{ padding: 12px; }
+
+    /* Pills / buttons */
+    .pillRow{ display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+    .pill{
+      display:inline-flex; align-items:center; gap:8px;
+      padding: 6px 10px;
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 999px;
+      background: rgba(0,0,0,.18);
+      color: var(--muted);
+      font-size: 12px;
+      white-space: nowrap;
+    }
+    .dot{ width:10px;height:10px;border-radius:999px;background:#666; box-shadow: 0 0 0 3px rgba(255,255,255,.06) inset; }
+    .dot.ok{ background: var(--good); }
+    .dot.warn{ background: var(--warn); }
+    .dot.bad{ background: var(--bad); }
+
+    .btn{
+      appearance:none;
+      border: 1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.08);
+      color: var(--text);
+      padding: 9px 12px;
+      border-radius: 12px;
+      font-size: 13px;
+      cursor:pointer;
+      transition: transform .05s ease, background .15s ease;
+      user-select:none;
+      white-space: nowrap;
+    }
+    .btn:hover{ background: rgba(255,255,255,.12); }
+    .btn:active{ transform: translateY(1px); }
+    .btn.primary{
+      border-color: rgba(192,132,252,.35);
+      background: linear-gradient(90deg, rgba(192,132,252,.18), rgba(244,114,182,.12));
+    }
+    .btn.danger{
+      border-color: rgba(255,92,122,.30);
+      background: rgba(255,92,122,.10);
+    }
+    .btn.ghost{
+      background: transparent;
+      border-color: rgba(255,255,255,.14);
+    }
+
+    /* Forms */
+    .formRow{
+      display:flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: end;
+    }
+    label{
+      display:flex;
+      flex-direction: column;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--muted);
+      min-width: 130px;
+      flex: 1;
+    }
+    input, select{
+      border: 1px solid rgba(255,255,255,.14);
+      background: rgba(0,0,0,.22);
+      color: var(--text);
+      padding: 10px 10px;
+      border-radius: 12px;
+      font-size: 14px;
+      outline: none;
+    }
+    input:focus, select:focus{
+      border-color: rgba(192,132,252,.50);
+      box-shadow: 0 0 0 4px rgba(192,132,252,.12);
+    }
+    .divider{
+      height: 1px;
+      background: rgba(255,255,255,.10);
+      margin: 12px 0;
+    }
+    .small{ font-size: 12px; color: var(--muted); }
+    .muted{ color: var(--muted); }
+    .muted2{ color: var(--muted2); }
+    .good{ color: var(--good); }
+    .bad{ color: var(--bad); }
+    .warn{ color: var(--warn); }
+
+    /* KPIs */
+    .kpiGrid{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    @media(min-width: 640px){
+      .kpiGrid{ grid-template-columns: repeat(4, 1fr); }
+    }
+    .kpi{
+      border:1px solid rgba(255,255,255,.12);
+      border-radius: 16px;
+      padding: 12px;
+      background: rgba(0,0,0,.15);
+    }
+    .kpi .lab{ font-size: 12px; color: var(--muted); }
+    .kpi .val{ margin-top: 6px; font-size: 16px; }
+
+    /* Bills grid (mobile-first) */
+    .gridBills{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+    @media(min-width: 540px){
+      .gridBills{ grid-template-columns: 1fr 1fr; }
+    }
+    .billCard{
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 16px;
+      background: rgba(0,0,0,.14);
+      padding: 12px;
+      display:flex;
+      gap:10px;
+      justify-content: space-between;
+      align-items:flex-start;
+    }
+    .billLeft{
+      display:flex;
+      flex-direction: column;
+      gap: 4px;
+      min-width: 0;
+    }
+    .billName{
+      margin:0;
+      font-size: 14px;
+      white-space: nowrap;
+      overflow:hidden;
+      text-overflow: ellipsis;
+      max-width: 100%;
+    }
+    .billMeta{
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.25;
+    }
+    .billRight{
+      display:flex;
+      flex-direction: column;
+      gap: 8px;
+      align-items:flex-end;
+      min-width: 128px;
+    }
+    .amount{
+      font-size: 14px;
+      font-weight: 750;
+      letter-spacing:.2px;
+    }
+    .actions{ display:flex; gap: 8px; flex-wrap: wrap; justify-content:flex-end; }
+
+    /* Sticky footer */
+    .stickyFooter{
+      position: sticky;
+      bottom: 0;
+      backdrop-filter: blur(10px);
+      background: linear-gradient(180deg, rgba(5,4,12,0), rgba(5,4,12,.85) 30%, rgba(5,4,12,.92));
+      padding: 10px 12px;
+      border-top: 1px solid rgba(255,255,255,.08);
+      display:flex;
+      gap:10px;
+      justify-content: space-between;
+      align-items:center;
+    }
+
+    /* Toast */
+    .toast{
+      position: fixed;
+      left: 50%;
+      bottom: 16px;
+      transform: translateX(-50%);
+      padding: 10px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.18);
+      background: rgba(0,0,0,.55);
+      color: rgba(255,255,255,.9);
+      font-size: 12px;
+      display:none;
+      box-shadow: 0 18px 60px rgba(0,0,0,.55);
+      z-index: 9999;
+      max-width: calc(100vw - 24px);
+      text-align: center;
+    }
+
+    .miniList{ display:flex; flex-direction: column; gap: 8px; }
+    .miniRow{
+      display:flex;
+      justify-content: space-between;
+      gap:10px;
+      font-size: 12px;
+      color: var(--muted);
+      border: 1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.16);
+      padding: 8px 10px;
+      border-radius: 12px;
+      align-items:center;
+    }
+    .miniRow b{ color: rgba(255,255,255,.88); font-weight:650; }
+
+    /* ---------- AUTH OVERLAY ---------- */
+    .overlay{
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.58);
+      backdrop-filter: blur(8px);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      z-index: 99999;
+      padding: 16px;
+    }
+    .authCard{
+      width: min(520px, 100%);
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,.14);
+      background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.04));
+      box-shadow: 0 18px 60px rgba(0,0,0,.65);
+      overflow:hidden;
+    }
+    .authHead{
+      padding: 14px 14px 12px 14px;
+      display:flex;
+      justify-content: space-between;
+      align-items:center;
+      gap: 10px;
+      border-bottom: 1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.20);
+    }
+    .authHead h3{
+      margin:0;
+      font-size: 14px;
+      letter-spacing:.2px;
+      color: rgba(255,255,255,.92);
+    }
+    .authBody{ padding: 14px; }
+    .tabs{
+      display:flex; gap: 8px;
+      margin-bottom: 12px;
+      flex-wrap:wrap;
+    }
+    .tab{
+      padding: 8px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.06);
+      color: rgba(255,255,255,.85);
+      font-size: 12px;
+      cursor:pointer;
+      user-select:none;
+    }
+    .tab.active{
+      border-color: rgba(192,132,252,.55);
+      box-shadow: 0 0 0 3px rgba(192,132,252,.10);
+    }
+    .authErr{
+      margin-top: 10px;
+      padding: 10px 10px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,92,122,.30);
+      background: rgba(255,92,122,.10);
+      color: rgba(255,255,255,.92);
+      font-size: 12px;
+      display:none;
+      white-space: pre-wrap;
+      line-height: 1.35;
+    }
+    .authInfo{
+      margin-top: 10px;
+      padding: 10px 10px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,211,106,.25);
+      background: rgba(255,211,106,.08);
+      color: rgba(255,255,255,.90);
+      font-size: 12px;
+      line-height: 1.35;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="topbar">
+    <div>
+      <h1>Budget Dashboard</h1>
+      <div class="subtitle">
+        Cash + bills + (optional) debts. Per-user cloud save via your new API.
+      </div>
+    </div>
+    <div class="pillRow">
+      <div class="pill"><span class="dot warn" id="statusDot"></span><span id="statusText">Not loaded yet</span></div>
+      <div class="pill" id="todayPill">Today: —</div>
+
+      <button class="btn ghost" id="loginBtn">Login</button>
+      <button class="btn ghost" id="logoutBtn" style="display:none;">Logout</button>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <!-- Snapshot -->
+    <section class="card">
+      <div class="cardHeader">
+        <h2>Snapshot</h2>
+        <div class="pillRow">
+          <button class="btn ghost" id="reloadBtn">Reload</button>
+          <button class="btn primary" id="saveBtn">Save</button>
+          <button class="btn" id="autosaveToggleBtn" title="Toggle autosave">Autosave: ON</button>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="formRow" style="margin-bottom: 10px;">
+          <label>Cash right now
+            <input id="cashNow" type="number" step="0.01" inputmode="decimal" placeholder="e.g. 1200" />
+          </label>
+
+          <label>Next paycheck in…
+            <select id="payWindowPreset">
+              <option value="7">7 days</option>
+              <option value="14" selected>14 days</option>
+              <option value="15">15 days</option>
+              <option value="30">30 days</option>
+              <option value="custom">Custom</option>
+            </select>
+          </label>
+
+          <label id="customDaysWrap" style="display:none;">Custom days
+            <input id="payWindowDays" type="number" min="1" max="90" step="1" inputmode="numeric" placeholder="e.g. 10" />
+          </label>
+        </div>
+
+        <div class="kpiGrid">
+          <div class="kpi">
+            <div class="lab">Payday (estimated)</div>
+            <div class="val" id="kPayday">—</div>
+          </div>
+          <div class="kpi">
+            <div class="lab">Bills in pay window</div>
+            <div class="val" id="kBillsWindow">—</div>
+          </div>
+          <div class="kpi">
+            <div class="lab">Debt plan (optional / mo)</div>
+            <div class="val" id="kDebtPlan">—</div>
+          </div>
+          <div class="kpi">
+            <div class="lab">Safe to spend</div>
+            <div class="val" id="kSafe">—</div>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="pill"><span class="muted2" id="dueCount">0 bills</span></div>
+        <div class="miniList" id="dueList" style="margin-top:10px;"></div>
+      </div>
+
+      <div class="stickyFooter">
+        <div class="small" id="lastSavedText">Last saved: —</div>
+        <div style="display:flex; gap:8px;">
+          <button class="btn danger" id="clearCashBtn" title="Sets cash to 0 (does not delete bills)">Clear cash</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Bills + Debts -->
+    <section class="card">
+      <div class="cardHeader">
+        <h2>Manage bills</h2>
+        <div class="pillRow">
+          <span class="pill"><span class="muted2">Cloud user data</span></span>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="formRow" style="margin-bottom:10px;">
+          <label>Bill name
+            <input id="billName" type="text" placeholder="Rent" />
+          </label>
+          <label>Due day (1–31)
+            <input id="billDay" type="number" min="1" max="31" inputmode="numeric" placeholder="1" />
+          </label>
+          <label>Amount
+            <input id="billAmt" type="number" step="0.01" inputmode="decimal" placeholder="950" />
+          </label>
+          <div style="flex:0 0 auto;">
+            <button class="btn" id="addBillBtn">Add bill</button>
+          </div>
+        </div>
+
+        <div class="pillRow" style="margin-bottom: 10px;">
+          <div class="pill"><span class="muted2" id="billCount">0</span> bills</div>
+          <div class="pill"><span class="muted2" id="billTotal">—</span> / month</div>
+        </div>
+
+        <div class="gridBills" id="billGrid"></div>
+
+        <div class="divider"></div>
+
+        <div class="pillRow" style="margin-bottom:8px;">
+          <div class="pill"><span class="muted2">Optional:</span> debts</div>
+        </div>
+
+        <div class="formRow" style="margin-bottom:10px;">
+          <label>Debt name
+            <input id="debtName" type="text" placeholder="Credit Card" />
+          </label>
+          <label>Balance
+            <input id="debtBal" type="number" step="0.01" inputmode="decimal" placeholder="3200" />
+          </label>
+          <label>Min / mo
+            <input id="debtMin" type="number" step="0.01" inputmode="decimal" placeholder="85" />
+          </label>
+          <label>Goal / mo
+            <input id="debtGoal" type="number" step="0.01" inputmode="decimal" placeholder="150" />
+          </label>
+          <div style="flex:0 0 auto;">
+            <button class="btn" id="addDebtBtn">Add debt</button>
+          </div>
+        </div>
+
+        <div class="miniList" id="debtList"></div>
+      </div>
+    </section>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <!-- AUTH OVERLAY -->
+  <div class="overlay" id="authOverlay" aria-hidden="true">
+    <div class="authCard" role="dialog" aria-modal="true">
+      <div class="authHead">
+        <h3 id="authTitle">Login</h3>
+        <button class="btn ghost" id="authCloseBtn" title="Close">✕</button>
+      </div>
+      <div class="authBody">
+        <div class="tabs">
+          <div class="tab active" id="tabLogin">Login</div>
+          <div class="tab" id="tabSignup">Sign up</div>
+        </div>
+
+        <div class="formRow">
+          <label>Username
+            <input id="authUser" type="text" autocomplete="username" placeholder="username" />
+          </label>
+          <label>Password
+            <input id="authPass" type="password" autocomplete="current-password" placeholder="password" />
+          </label>
+        </div>
+
+        <div class="authInfo">
+          Your session is stored in a secure cookie. Don’t lose your password — there’s no email reset yet.
+        </div>
+
+        <div class="pillRow" style="margin-top:12px; justify-content:flex-end;">
+          <button class="btn primary" id="authGoBtn">Login</button>
+        </div>
+
+        <div class="authErr" id="authErr"></div>
+      </div>
+    </div>
+  </div>
+
+<script>
+  // ======================
+  // Config (NEW ENDPOINTS)
+  // ======================
+  // If your API is same origin, leave API_BASE=""
+  // If hosted elsewhere, set like: const API_BASE="https://servers.jumpnexus.org";
+  const API_BASE = "https://backend.jumpnexus.org:8445";
+
+  const EP = {
+    me:        API_BASE + "/budget/me",
+    data:      API_BASE + "/budget/data",
+    register:  API_BASE + "/budget/auth/register",
+    login:     API_BASE + "/budget/auth/login",
+    logout:    API_BASE + "/budget/auth/logout",
+  };
+
+  // ======================
+  // Helpers
+  // ======================
+  const $ = (id)=>document.getElementById(id);
+  const fmt = (n)=>Number(n||0).toLocaleString(undefined,{style:"currency",currency:"USD"});
+  const today0 = ()=>{ const d=new Date(); d.setHours(0,0,0,0); return d; };
+  const iso = (d)=>{ const x=new Date(d); x.setHours(0,0,0,0); return x.toISOString().slice(0,10); };
+  const uid = ()=> (crypto?.randomUUID?.() || (Math.random().toString(16).slice(2)+Date.now().toString(16)));
+  const sleep = (ms)=>new Promise(r=>setTimeout(r,ms));
+
+  function toast(msg){
+    const t = $("toast");
+    t.textContent = msg;
+    t.style.display = "block";
+    clearTimeout(toast._t);
+    toast._t = setTimeout(()=> t.style.display="none", 1600);
+  }
+
+  function setStatus(state, text){
+    const dot = $("statusDot");
+    dot.classList.remove("ok","warn","bad");
+    dot.classList.add(state);
+    $("statusText").textContent = text;
+  }
+
+  function escapeHtml(s){
+    return String(s).replace(/[&<>"']/g, (c)=>({
+      "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+    }[c]));
+  }
+
+  async function fetchJson(url, opts={}){
+    const res = await fetch(url, {
+      ...opts,
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+        ...(opts.headers||{})
+      }
+    });
+
+    const text = await res.text().catch(()=> "");
+    let body = null;
+    try{ body = text ? JSON.parse(text) : null; }catch{ body = text; }
+
+    if(!res.ok){
+      const err = new Error((body && body.error) ? body.error : `HTTP_${res.status}`);
+      err.status = res.status;
+      err.body = body;
+      throw err;
+    }
+    return body;
+  }
+
+  function clampMonthlyDate(year, monthIndex, day){
+    const last = new Date(year, monthIndex+1, 0).getDate();
+    const useDay = Math.max(1, Math.min(Number(day||1), last));
+    return new Date(year, monthIndex, useDay);
+  }
+
+  function addDays(d, days){
+    const x = new Date(d);
+    x.setDate(x.getDate() + Number(days||0));
+    x.setHours(0,0,0,0);
+    return x;
+  }
+
+  function sameDay(a,b){
+    return a.getFullYear()===b.getFullYear() && a.getMonth()===b.getMonth() && a.getDate()===b.getDate();
+  }
+
+  // ======================
+  // Data shape
+  // ======================
+  function normalize(obj){
+    const out = {
+      cashNow: Number(obj?.cashNow || 0),
+      payWindowDays: Number(obj?.payWindowDays || 14),
+      bills: Array.isArray(obj?.bills) ? obj.bills : [],
+      debts: Array.isArray(obj?.debts) ? obj.debts : [],
+      updatedAt: obj?.updatedAt || ""
+    };
+
+    out.payWindowDays = Math.max(1, Math.min(90, Number.isFinite(out.payWindowDays) ? out.payWindowDays : 14));
+
+    out.bills = out.bills.map(b=>({
+      id: String(b?.id || uid()),
+      name: String(b?.name || "").trim(),
+      day: Number(b?.day || 1),
+      amount: Number(b?.amount || 0)
+    })).filter(b=>b.name && b.day>=1 && b.day<=31 && Number.isFinite(b.amount));
+
+    out.debts = out.debts.map(d=>({
+      id: String(d?.id || uid()),
+      name: String(d?.name || "").trim(),
+      balance: Number(d?.balance || 0),
+      min: Number(d?.min || 0),
+      goal: Number(d?.goal || 0)
+    })).filter(d=>d.name && Number.isFinite(d.balance) && d.balance >= 0 && Number.isFinite(d.min) && d.min >= 0);
+
+    return out;
+  }
+
+  // ======================
+  // Window + bills logic
+  // ======================
+  function paydayDate(){
+    const t = today0();
+    const days = currentPayWindowDays();
+    return addDays(t, days);
+  }
+
+  function currentPayWindowDays(){
+    const preset = $("payWindowPreset").value;
+    if(preset === "custom"){
+      const n = Number($("payWindowDays").value || data.payWindowDays || 14);
+      return Math.max(1, Math.min(90, n));
+    }
+    const n = Number(preset || data.payWindowDays || 14);
+    return Math.max(1, Math.min(90, n));
+  }
+
+  function billsBetween(bills, startDate, endDate){
+    const s = new Date(startDate); s.setHours(0,0,0,0);
+    const e = new Date(endDate);   e.setHours(0,0,0,0);
+    const out = [];
+
+    // cover month boundaries (up to ~3 months window)
+    for(let addM=0; addM<=3; addM++){
+      const base = new Date(s);
+      base.setMonth(base.getMonth()+addM);
+      const y = base.getFullYear(), m = base.getMonth();
+      for(const b of bills){
+        const due = clampMonthlyDate(y, m, b.day);
+        if(due >= s && due <= e){
+          out.push({ due, name: b.name, amount: b.amount, id: b.id, day: b.day });
+        }
+      }
+    }
+    out.sort((a,b)=>a.due-b.due);
+    return out;
+  }
+
+  // ======================
+  // State
+  // ======================
+  let data = normalize({ cashNow: 0, payWindowDays: 14, bills: [], debts: [], updatedAt: "" });
+  let autosave = true;
+  let dirty = false;
+  let lastSavedAt = "";
+
+  let authMode = "login"; // "login" | "signup"
+  let isAuthed = false;
+
+  // ======================
+  // Auth UI
+  // ======================
+  function showAuthOverlay(mode="login", msg=""){
+    authMode = mode;
+    $("authOverlay").style.display = "flex";
+    $("authOverlay").setAttribute("aria-hidden","false");
+    setAuthMode(mode);
+    setAuthError(msg || "");
+    $("authUser").focus();
+  }
+
+  function hideAuthOverlay(){
+    $("authOverlay").style.display = "none";
+    $("authOverlay").setAttribute("aria-hidden","true");
+    setAuthError("");
+  }
+
+  function setAuthMode(mode){
+    authMode = mode;
+    $("tabLogin").classList.toggle("active", mode==="login");
+    $("tabSignup").classList.toggle("active", mode==="signup");
+    $("authTitle").textContent = mode === "login" ? "Login" : "Sign up";
+    $("authGoBtn").textContent = mode === "login" ? "Login" : "Create account";
+    // password autocomplete hint
+    $("authPass").setAttribute("autocomplete", mode==="login" ? "current-password" : "new-password");
+  }
+
+  function setAuthError(msg){
+    const el = $("authErr");
+    if(!msg){
+      el.style.display="none";
+      el.textContent="";
+      return;
+    }
+    el.style.display="block";
+    el.textContent = msg;
+  }
+
+  async function doAuth(){
+    const username = ($("authUser").value || "").trim();
+    const password = ($("authPass").value || "").trim();
+
+    if(username.length < 3) return setAuthError("Username must be at least 3 characters.");
+    if(password.length < 6) return setAuthError("Password must be at least 6 characters.");
+
+    setAuthError("");
+    setStatus("warn", authMode === "login" ? "Logging in…" : "Creating account…");
+
+    try{
+      if(authMode === "signup"){
+        await fetchJson(EP.register, {
+          method: "POST",
+          body: JSON.stringify({ username, password })
+        });
+      } else {
+        await fetchJson(EP.login, {
+          method: "POST",
+          body: JSON.stringify({ username, password })
+        });
+      }
+
+      toast(authMode === "login" ? "Logged in" : "Account created");
+      isAuthed = true;
+      $("loginBtn").style.display = "none";
+      $("logoutBtn").style.display = "";
+
+      hideAuthOverlay();
+      await loadFromApi(); // now load user data
+    }catch(e){
+      console.error(e);
+      const nice = (e?.body && e.body.error) ? e.body.error : (e.message || "auth_failed");
+      setStatus("bad", "Auth failed");
+      setAuthError(`Auth failed: ${nice}`);
+    }
+  }
+
+  async function doLogout(){
+    try{
+      await fetchJson(EP.logout, { method:"POST", body: "{}" });
+    }catch(e){
+      // even if logout fails, treat as logged out client-side
+      console.warn("logout failed", e);
+    }
+    isAuthed = false;
+    $("logoutBtn").style.display = "none";
+    $("loginBtn").style.display = "";
+
+    toast("Logged out");
+    setStatus("warn", "Logged out");
+
+    // Clear local view to avoid editing stale data without auth
+    data = normalize({ cashNow: 0, payWindowDays: 14, bills: [], debts: [], updatedAt: "" });
+    lastSavedAt = "";
+    applyUiFromData();
+    renderAll();
+
+    showAuthOverlay("login", "Please login to load your cloud data.");
+  }
+
+  async function checkMe(){
+    try{
+      await fetchJson(EP.me, { method:"GET" });
+      isAuthed = true;
+      $("loginBtn").style.display = "none";
+      $("logoutBtn").style.display = "";
+      return true;
+    }catch(e){
+      isAuthed = false;
+      $("logoutBtn").style.display = "none";
+      $("loginBtn").style.display = "";
+      return false;
+    }
+  }
+
+  // ======================
+  // Load / Save (API)
+  // ======================
+  async function loadFromApi(){
+    setStatus("warn", "Loading…");
+    try{
+      const obj = await fetchJson(EP.data, { method:"GET" });
+      data = normalize(obj);
+
+      dirty = false;
+      lastSavedAt = data.updatedAt || "";
+      setStatus("ok", "Loaded");
+      toast("Loaded");
+      applyUiFromData();
+      renderAll();
+    }catch(e){
+      console.error(e);
+
+      // If not authed, show login
+      if(e.status === 401 || e.status === 403){
+        setStatus("bad", "Login required");
+        showAuthOverlay("login", "Login required to load your data.");
+        return;
+      }
+
+      setStatus("bad", "Load failed");
+      toast("Load failed (check API)");
+    }
+  }
+
+  async function saveToApi(){
+    setStatus("warn", "Saving…");
+    try{
+      const payload = normalize({
+        ...data,
+        cashNow: Number($("cashNow").value || 0),
+        payWindowDays: currentPayWindowDays(),
+        updatedAt: new Date().toISOString()
+      });
+
+      const saved = await fetchJson(EP.data, {
+        method: "PUT",
+        body: JSON.stringify(payload)
+      });
+
+      data = normalize(saved || payload);
+      dirty = false;
+      lastSavedAt = data.updatedAt || new Date().toISOString();
+
+      setStatus("ok", "Saved");
+      toast("Saved");
+      applyUiFromData();
+      renderAll();
+    }catch(e){
+      console.error(e);
+
+      if(e.status === 401 || e.status === 403){
+        setStatus("bad", "Login required");
+        showAuthOverlay("login", "You are logged out. Login again to save.");
+        return;
+      }
+
+      setStatus("bad", "Save failed");
+      toast("Save failed");
+    }
+  }
+
+  function queueAutosave(){
+    dirty = true;
+    if(!autosave) return;
+    clearTimeout(queueAutosave._t);
+    queueAutosave._t = setTimeout(()=> saveToApi(), 650);
+  }
+
+  // ======================
+  // Render
+  // ======================
+  function applyUiFromData(){
+    $("cashNow").value = data.cashNow ?? 0;
+
+    const days = data.payWindowDays || 14;
+    const presetMatch = ["7","14","15","30"].includes(String(days));
+    $("payWindowPreset").value = presetMatch ? String(days) : "custom";
+    $("customDaysWrap").style.display = presetMatch ? "none" : "flex";
+    $("payWindowDays").value = presetMatch ? "" : String(days);
+  }
+
+  function renderAll(){
+    const t = today0();
+    $("todayPill").textContent = "Today: " + t.toLocaleDateString();
+    $("autosaveToggleBtn").textContent = "Autosave: " + (autosave ? "ON" : "OFF");
+    $("lastSavedText").textContent = "Last saved: " + (lastSavedAt ? new Date(lastSavedAt).toLocaleString() : "—");
+
+    renderSnapshot();
+    renderBills();
+    renderDebts();
+  }
+
+  function renderSnapshot(){
+    const cash = Number($("cashNow").value || 0);
+    const days = currentPayWindowDays();
+    const pay = paydayDate();
+
+    const dueBills = billsBetween(data.bills, today0(), pay);
+    const billsTotal = dueBills.reduce((s,x)=>s+Number(x.amount||0),0);
+    const debtPlan = data.debts.reduce((s,x)=> s + Number(x.goal || x.min || 0), 0);
+
+    $("kPayday").textContent = `${pay.toLocaleDateString()} (${days}d)`;
+    $("kBillsWindow").textContent = fmt(billsTotal);
+    $("kDebtPlan").textContent = fmt(debtPlan);
+
+    const safe = cash - billsTotal - debtPlan;
+    $("kSafe").innerHTML = `<span class="${safe>=0?'good':'bad'}">${fmt(safe)}</span>`;
+
+    $("dueCount").textContent = `${dueBills.length} bill${dueBills.length===1?'':'s'} in window`;
+
+    const list = $("dueList");
+    list.innerHTML = "";
+    if(dueBills.length === 0){
+      list.innerHTML = `<div class="miniRow"><span>No bills due before payday</span><b class="good">Nice.</b></div>`;
+    } else {
+      for(const b of dueBills){
+        const row = document.createElement("div");
+        row.className = "miniRow";
+        const d = b.due;
+        const label = `${d.toLocaleDateString(undefined,{month:'short',day:'2-digit'})} • Day ${b.day}`;
+        row.innerHTML = `<span>${escapeHtml(b.name)} <span class="muted2">(${escapeHtml(label)})</span></span><b class="warn">${fmt(b.amount)}</b>`;
+        list.appendChild(row);
+      }
+    }
+  }
+
+  function renderBills(){
+    const grid = $("billGrid");
+    const sorted = [...data.bills].sort((a,b)=>a.day-b.day);
+    $("billCount").textContent = sorted.length;
+
+    const monthlyTotal = sorted.reduce((s,x)=> s + Number(x.amount||0), 0);
+    $("billTotal").textContent = fmt(monthlyTotal);
+
+    grid.innerHTML = "";
+    if(sorted.length === 0){
+      grid.innerHTML = `<div class="billCard"><div class="billLeft"><p class="billName">No bills yet</p><div class="billMeta">Add Rent, Car, Phone, etc. (day of month + amount).</div></div></div>`;
+      return;
+    }
+
+    for(const b of sorted){
+      const el = document.createElement("div");
+      el.className = "billCard";
+      el.innerHTML = `
+        <div class="billLeft">
+          <p class="billName">${escapeHtml(b.name)}</p>
+          <div class="billMeta">Due day <b class="muted2">${b.day}</b> • Monthly</div>
+        </div>
+        <div class="billRight">
+          <div class="amount warn">${fmt(b.amount)}</div>
+          <div class="actions">
+            <button class="btn ghost" data-edit-bill="${b.id}">Edit</button>
+            <button class="btn danger" data-del-bill="${b.id}">Del</button>
+          </div>
+        </div>
+      `;
+      grid.appendChild(el);
+    }
+  }
+
+  function renderDebts(){
+    const list = $("debtList");
+    const sorted = [...data.debts].sort((a,b)=>b.balance-a.balance);
+    list.innerHTML = "";
+
+    if(sorted.length === 0){
+      list.innerHTML = `<div class="miniRow"><span class="muted">No debts added</span><b class="muted2">optional</b></div>`;
+      return;
+    }
+
+    for(const d of sorted){
+      const planned = Number(d.goal || d.min || 0);
+
+      const row = document.createElement("div");
+      row.className = "miniRow";
+      row.style.alignItems = "flex-start";
+
+      row.innerHTML = `
+        <div style="display:flex; flex-direction:column; gap:6px; flex:1; min-width:0;">
+          <div style="display:flex; justify-content:space-between; gap:10px; align-items:baseline; flex-wrap:wrap;">
+            <b style="color: rgba(255,255,255,.88); font-weight:700; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width: 100%;">
+              ${escapeHtml(d.name)}
+            </b>
+            <b>${fmt(planned)}/mo</b>
+          </div>
+
+          <div class="muted2" style="font-size:12px;">
+            Bal ${fmt(d.balance)} • Min ${fmt(d.min)}${d.goal ? ` • Goal ${fmt(d.goal)}` : ""}
+          </div>
+
+          <div class="actions" style="justify-content:flex-start;">
+            <button class="btn ghost" data-edit-debt="${d.id}">Edit</button>
+            <button class="btn danger" data-del-debt="${d.id}">Del</button>
+          </div>
+        </div>
+      `;
+
+      list.appendChild(row);
+    }
+  }
+
+  // ======================
+  // Mutations
+  // ======================
+  function addBill(){
+    const name = $("billName").value.trim();
+    const day  = Number($("billDay").value || 0);
+    const amt  = Number($("billAmt").value || 0);
+    if(!name || !day || day<1 || day>31 || !Number.isFinite(amt)) return toast("Enter name, day (1–31), amount");
+
+    data.bills.push({ id: uid(), name, day, amount: amt });
+    $("billName").value = "";
+    $("billDay").value = "";
+    $("billAmt").value = "";
+
+    queueAutosave();
+    renderAll();
+  }
+
+  function editBill(id){
+    const b = data.bills.find(x=>x.id===id);
+    if(!b) return;
+
+    const newName = prompt("Bill name:", b.name) ?? b.name;
+    const newDay  = prompt("Due day (1-31):", String(b.day)) ?? String(b.day);
+    const newAmt  = prompt("Amount:", String(b.amount)) ?? String(b.amount);
+
+    b.name = String(newName).trim();
+    b.day = Math.max(1, Math.min(31, Number(newDay || 1)));
+    b.amount = Number(newAmt || 0);
+
+    queueAutosave();
+    renderAll();
+  }
+
+  function delBill(id){
+    if(!confirm("Delete this bill?")) return;
+    data.bills = data.bills.filter(x=>x.id!==id);
+    queueAutosave();
+    renderAll();
+  }
+
+  function addDebt(){
+    const name = $("debtName").value.trim();
+    const bal  = Number($("debtBal").value || 0);
+    const min  = Number($("debtMin").value || 0);
+    const goal = Number($("debtGoal").value || 0);
+    if(!name || bal < 0 || !Number.isFinite(min)) return toast("Enter name, balance, minimum");
+
+    data.debts.push({ id: uid(), name, balance: bal, min, goal: goal || 0 });
+
+    $("debtName").value = "";
+    $("debtBal").value = "";
+    $("debtMin").value = "";
+    $("debtGoal").value = "";
+
+    queueAutosave();
+    renderAll();
+  }
+
+  function editDebt(id){
+    const d = data.debts.find(x=>x.id===id);
+    if(!d) return;
+
+    const newName = prompt("Debt name:", d.name) ?? d.name;
+    const newBal  = prompt("Balance:", String(d.balance)) ?? String(d.balance);
+    const newMin  = prompt("Min / mo:", String(d.min)) ?? String(d.min);
+    const newGoal = prompt("Goal / mo (0 = none):", String(d.goal || 0)) ?? String(d.goal || 0);
+
+    d.name = String(newName).trim();
+    d.balance = Number(newBal || 0);
+    d.min = Number(newMin || 0);
+    d.goal = Number(newGoal || 0);
+
+    queueAutosave();
+    renderAll();
+  }
+
+  function delDebt(id){
+    if(!confirm("Delete this debt?")) return;
+    data.debts = data.debts.filter(x=>x.id!==id);
+    queueAutosave();
+    renderAll();
+  }
+
+  // ======================
+  // Events
+  // ======================
+  $("reloadBtn").addEventListener("click", loadFromApi);
+  $("saveBtn").addEventListener("click", saveToApi);
+
+  $("cashNow").addEventListener("input", ()=>{
+    data.cashNow = Number($("cashNow").value || 0);
+    queueAutosave();
+    renderSnapshot();
+  });
+
+  $("autosaveToggleBtn").addEventListener("click", ()=>{
+    autosave = !autosave;
+    toast("Autosave " + (autosave ? "ON" : "OFF"));
+    $("autosaveToggleBtn").textContent = "Autosave: " + (autosave ? "ON" : "OFF");
+    if(autosave && dirty) queueAutosave();
+  });
+
+  $("payWindowPreset").addEventListener("change", ()=>{
+    const v = $("payWindowPreset").value;
+    $("customDaysWrap").style.display = (v === "custom") ? "flex" : "none";
+
+    if(v === "custom"){
+      $("payWindowDays").value = String(data.payWindowDays || 14);
+      $("payWindowDays").focus();
+    }
+
+    data.payWindowDays = currentPayWindowDays();
+    queueAutosave();
+    renderAll();
+  });
+
+  $("payWindowDays").addEventListener("input", ()=>{
+    data.payWindowDays = currentPayWindowDays();
+    queueAutosave();
+    renderAll();
+  });
+
+  $("addBillBtn").addEventListener("click", addBill);
+  $("addDebtBtn").addEventListener("click", addDebt);
+
+  $("clearCashBtn").addEventListener("click", ()=>{
+    if(!confirm("Set cash to 0? (Bills stay)")) return;
+    data.cashNow = 0;
+    $("cashNow").value = 0;
+    queueAutosave();
+    renderAll();
+  });
+
+  // Auth buttons
+  $("loginBtn").addEventListener("click", ()=> showAuthOverlay("login"));
+  $("logoutBtn").addEventListener("click", doLogout);
+
+  // Overlay controls
+  $("authCloseBtn").addEventListener("click", hideAuthOverlay);
+  $("tabLogin").addEventListener("click", ()=> setAuthMode("login"));
+  $("tabSignup").addEventListener("click", ()=> setAuthMode("signup"));
+  $("authGoBtn").addEventListener("click", doAuth);
+  $("authPass").addEventListener("keydown", (e)=>{ if(e.key === "Enter") doAuth(); });
+
+  // Close overlay when clicking outside card
+  $("authOverlay").addEventListener("click", (e)=>{
+    if(e.target === $("authOverlay")) hideAuthOverlay();
+  });
+
+  // Global delegates
+  document.addEventListener("click", (e)=>{
+    const t = e.target;
+
+    const eb = t.getAttribute?.("data-edit-bill");
+    const db = t.getAttribute?.("data-del-bill");
+    if(eb) return editBill(eb);
+    if(db) return delBill(db);
+
+    const ed = t.getAttribute?.("data-edit-debt");
+    const dd = t.getAttribute?.("data-del-debt");
+    if(ed) return editDebt(ed);
+    if(dd) return delDebt(dd);
+  });
+
+  // ======================
+  // Init
+  // ======================
+  (function init(){
+    const t = today0();
+    $("todayPill").textContent = "Today: " + t.toLocaleDateString();
+
+    setStatus("warn", "Loading…");
+
+    // Check session, then load data; if not logged in, show overlay.
+    (async ()=>{
+      const ok = await checkMe();
+      if(ok){
+        await loadFromApi();
+      }else{
+        setStatus("bad", "Login required");
+        renderAll();
+        showAuthOverlay("login", "Login or create an account to start.");
+      }
+    })();
+  })();
+</script>
+</body>
+</html>
