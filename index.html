@@ -558,18 +558,21 @@
 
 <script>
   // ======================
-  // Config (NEW ENDPOINTS)
+  // Config (FIXED ENDPOINTS)
   // ======================
-  // If your API is same origin, leave API_BASE=""
-  // If hosted elsewhere, set like: const API_BASE="https://servers.jumpnexus.org";
   const API_BASE = "https://backend.jumpnexus.org:8445";
 
+  // Backend routes you showed:
+  // POST /budget/signup
+  // POST /budget/login
+  // POST /budget/logout
+  // GET  /budget/me
+  // PUT  /budget/me
   const EP = {
-    me:        API_BASE + "/budget/me",
-    data:      API_BASE + "/budget/data",
-    register:  API_BASE + "/budget/auth/register",
-    login:     API_BASE + "/budget/auth/login",
-    logout:    API_BASE + "/budget/auth/logout",
+    me:     API_BASE + "/budget/me",
+    signup: API_BASE + "/budget/signup",
+    login:  API_BASE + "/budget/login",
+    logout: API_BASE + "/budget/logout",
   };
 
   // ======================
@@ -578,9 +581,7 @@
   const $ = (id)=>document.getElementById(id);
   const fmt = (n)=>Number(n||0).toLocaleString(undefined,{style:"currency",currency:"USD"});
   const today0 = ()=>{ const d=new Date(); d.setHours(0,0,0,0); return d; };
-  const iso = (d)=>{ const x=new Date(d); x.setHours(0,0,0,0); return x.toISOString().slice(0,10); };
   const uid = ()=> (crypto?.randomUUID?.() || (Math.random().toString(16).slice(2)+Date.now().toString(16)));
-  const sleep = (ms)=>new Promise(r=>setTimeout(r,ms));
 
   function toast(msg){
     const t = $("toast");
@@ -606,6 +607,7 @@
   async function fetchJson(url, opts={}){
     const res = await fetch(url, {
       ...opts,
+      // ✅ REQUIRED for cookie-based auth from GitHub Pages -> your backend
       credentials: "include",
       headers: {
         "Content-Type": "application/json",
@@ -637,10 +639,6 @@
     x.setDate(x.getDate() + Number(days||0));
     x.setHours(0,0,0,0);
     return x;
-  }
-
-  function sameDay(a,b){
-    return a.getFullYear()===b.getFullYear() && a.getMonth()===b.getMonth() && a.getDate()===b.getDate();
   }
 
   // ======================
@@ -699,7 +697,6 @@
     const e = new Date(endDate);   e.setHours(0,0,0,0);
     const out = [];
 
-    // cover month boundaries (up to ~3 months window)
     for(let addM=0; addM<=3; addM++){
       const base = new Date(s);
       base.setMonth(base.getMonth()+addM);
@@ -750,7 +747,6 @@
     $("tabSignup").classList.toggle("active", mode==="signup");
     $("authTitle").textContent = mode === "login" ? "Login" : "Sign up";
     $("authGoBtn").textContent = mode === "login" ? "Login" : "Create account";
-    // password autocomplete hint
     $("authPass").setAttribute("autocomplete", mode==="login" ? "current-password" : "new-password");
   }
 
@@ -770,14 +766,15 @@
     const password = ($("authPass").value || "").trim();
 
     if(username.length < 3) return setAuthError("Username must be at least 3 characters.");
-    if(password.length < 6) return setAuthError("Password must be at least 6 characters.");
+    // ✅ server requires 8+
+    if(password.length < 8) return setAuthError("Password must be at least 8 characters.");
 
     setAuthError("");
     setStatus("warn", authMode === "login" ? "Logging in…" : "Creating account…");
 
     try{
       if(authMode === "signup"){
-        await fetchJson(EP.register, {
+        await fetchJson(EP.signup, {
           method: "POST",
           body: JSON.stringify({ username, password })
         });
@@ -794,7 +791,7 @@
       $("logoutBtn").style.display = "";
 
       hideAuthOverlay();
-      await loadFromApi(); // now load user data
+      await loadFromApi(); // now load user data from /budget/me
     }catch(e){
       console.error(e);
       const nice = (e?.body && e.body.error) ? e.body.error : (e.message || "auth_failed");
@@ -805,9 +802,8 @@
 
   async function doLogout(){
     try{
-      await fetchJson(EP.logout, { method:"POST", body: "{}" });
+      await fetchJson(EP.logout, { method:"POST" });
     }catch(e){
-      // even if logout fails, treat as logged out client-side
       console.warn("logout failed", e);
     }
     isAuthed = false;
@@ -817,7 +813,6 @@
     toast("Logged out");
     setStatus("warn", "Logged out");
 
-    // Clear local view to avoid editing stale data without auth
     data = normalize({ cashNow: 0, payWindowDays: 14, bills: [], debts: [], updatedAt: "" });
     lastSavedAt = "";
     applyUiFromData();
@@ -842,12 +837,12 @@
   }
 
   // ======================
-  // Load / Save (API)
+  // Load / Save (API)  ✅ FIXED to /budget/me
   // ======================
   async function loadFromApi(){
     setStatus("warn", "Loading…");
     try{
-      const obj = await fetchJson(EP.data, { method:"GET" });
+      const obj = await fetchJson(EP.me, { method:"GET" });
       data = normalize(obj);
 
       dirty = false;
@@ -859,7 +854,6 @@
     }catch(e){
       console.error(e);
 
-      // If not authed, show login
       if(e.status === 401 || e.status === 403){
         setStatus("bad", "Login required");
         showAuthOverlay("login", "Login required to load your data.");
@@ -881,7 +875,7 @@
         updatedAt: new Date().toISOString()
       });
 
-      const saved = await fetchJson(EP.data, {
+      const saved = await fetchJson(EP.me, {
         method: "PUT",
         body: JSON.stringify(payload)
       });
@@ -1222,7 +1216,6 @@
 
     setStatus("warn", "Loading…");
 
-    // Check session, then load data; if not logged in, show overlay.
     (async ()=>{
       const ok = await checkMe();
       if(ok){
